@@ -1,4 +1,4 @@
-package com.waydeep.umuck.model;
+package com.waydeep.common.http;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;

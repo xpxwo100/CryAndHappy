@@ -4,7 +4,7 @@ import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtostuffIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
-import com.waydeep.umuck.model.HttpResult;
+import com.waydeep.common.http.HttpResult;
 import com.waydeep.umuck.model.TestBean;
 import org.junit.jupiter.api.Test;
 
