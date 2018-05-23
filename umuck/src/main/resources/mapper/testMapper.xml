@@ -6,7 +6,7 @@
 	<select id="selectData" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
 		select
 		*
-		from Test1
+		from PuPurchase
 		where id = #{id,jdbcType=INTEGER}
 	</select>
 </mapper>
