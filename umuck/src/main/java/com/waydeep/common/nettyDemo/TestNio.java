@@ -1,5 +1,7 @@
 package com.waydeep.common.nettyDemo;
 
+import com.waydeep.common.http.HttpResult;
+import com.waydeep.util.ProtostuffUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -128,5 +130,18 @@ public class TestNio {
           e.printStackTrace();
           if(socketChannel!=null){ socketChannel.close();}
       }
+    }
+
+    @Test
+    public void testByte() throws IOException {
+        HttpResult httpResult =  new HttpResult<>();
+        httpResult.setResult("fuck you jjidayd");
+
+        byte[] bb = ProtostuffUtil.encodeTuff(httpResult,HttpResult.class);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bb);
+        byte[] val = new byte[byteBuffer.remaining()];
+        byteBuffer.get(val,0,val.length);
+        HttpResult h = (HttpResult) ProtostuffUtil.decodeBuf(val,HttpResult.class);
+        System.out.print( h.getResult());
     }
 }
