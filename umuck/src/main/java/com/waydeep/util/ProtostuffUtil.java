@@ -54,7 +54,7 @@ public class ProtostuffUtil {
         }
         long end = System.currentTimeMillis() ;
         long  userTime = end - start;
-        System.out.println("耗时："+userTime);
+        System.out.println("序列耗时："+userTime);
         return mBytes;
     }
 
