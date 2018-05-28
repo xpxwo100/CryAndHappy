@@ -8,6 +8,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
 import cn.com.aperfect.auap.external.common.startup.CustomProConfig;
+import cn.com.aperfect.auap.external.exception.AppRunTimeException;
+import cn.com.aperfect.auap.external.exception.CommandException;
 /**
  * rpc客户端
  * @author hasee
@@ -16,7 +18,7 @@ import cn.com.aperfect.auap.external.common.startup.CustomProConfig;
 public class RemoteProxyServiceClient {
 	public static final String SERVER_IP = CustomProConfig.getRpcThriftIP();
 	public static final int SERVER_PORT = CustomProConfig.getRpcThriftPort();
-    public ReSult load(DataWrapper dataWrapper) {
+    public ReSult load(DataWrapper dataWrapper){
         TTransport transport = null;
         ReSult result = null;
         try {
@@ -46,13 +48,12 @@ public class RemoteProxyServiceClient {
      * @return
      * @throws TException
      */
-    public ReSult buildConnection(TTransport transport,DataWrapper dataWrapper,ReSult result) throws TException{
+    private ReSult buildConnection(TTransport transport,DataWrapper dataWrapper,ReSult result) throws TException{
     	  // 协议要和服务端一致
         TProtocol protocol = new TBinaryProtocol(transport);// 二进制格式
         RemoteProxyByThrift.Client client = new RemoteProxyByThrift.Client(protocol);
         transport.open();
         result = client.load(dataWrapper);
-        result.setIsSuccess(true);
     	return result;
     }
 }

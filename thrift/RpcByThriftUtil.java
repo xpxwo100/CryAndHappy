@@ -1,11 +1,10 @@
 package cn.com.aperfect.auap.external.thrift;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 
+import cn.com.aperfect.auap.external.exception.AppRunTimeException;
 import cn.com.aperfect.auap.external.util.serialize.FSTUtil;
 import cn.com.aperfect.dto.base.ObjectDto;
 
@@ -23,66 +22,67 @@ public class RpcByThriftUtil {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	public static ObjectDto load(String SERVICE_BEAN_NAME,String methodName,Object param) {
-		if(SERVICE_BEAN_NAME == null || methodName == null || param == null){
+	public static ObjectDto load(String SERVICE_BEAN_NAME,String methodName,Object param)  {
+		if(SERVICE_BEAN_NAME == null || methodName == null ){
 			return new ObjectDto();
 		}
-		Map<String, List<Byte>> mapPrarm = new HashMap();
 		byte[] inData = FSTUtil.encode(param);
-		List<Byte> byteParamList = new ArrayList<>();
-		for(byte b : inData){
-			byteParamList.add(b);
-		}
-		mapPrarm.put("params", byteParamList);
-		DataWrapper dataWrapper = bulidDataWrapper(SERVICE_BEAN_NAME,methodName,mapPrarm);
+		DataWrapper dataWrapper = bulidDataWrapper(SERVICE_BEAN_NAME,methodName,inData);
+		inData = null;
 		RemoteProxyServiceClient remoteProxyServiceClient = new RemoteProxyServiceClient();
+		ObjectDto objectDto = null;
 		//客户端连接
 		ReSult reSult = remoteProxyServiceClient.load(dataWrapper);
-		//对返回数据进行解析
-		Map<String, List<Byte>> mapRe = reSult.getRelData();
-		ObjectDto objectDto = null;
-		if(mapRe != null){
-			List<Byte> byteList = null;
-			if(mapRe.get("value") !=null){
-				byteList = (List<Byte>)mapRe.get("value");
+		byte[] value = reSult.getValue();
+		if(reSult.isSuccess){
+			//对返回数据进行解析
+			if(value !=null){
+			    objectDto = (ObjectDto) FSTUtil.decodeBuf(value, ObjectDto.class);
 			}
-			byte[] b = listToByteArr(byteList);
-		    objectDto = (ObjectDto) FSTUtil.decodeBuf(b, ObjectDto.class);
+		}else{
+			//失败则抛出异常
+			if(value != null){
+				ErrorMsgException mExp=(ErrorMsgException) FSTUtil.decodeBuf(value, ErrorMsgException.class);
+				throw new AppRunTimeException(mExp.getCode(), mExp.getMsg(),mExp.getArgs());
+			}else{
+				throw new AppRunTimeException(reSult.getErrorMessage());
+			}
 		}
-		if(objectDto == null){
-			return new ObjectDto();
-		}
+		value = null;
 		return objectDto;
 	}
 	/**
 	 * 构建DataWrapper
 	 * @param SERVICE_BEAN_NAME
 	 * @param methodName
+	 * @param byteParamList 
+	 * @param inData 
 	 * @param listArgs
 	 * @return
 	 */
-	public static DataWrapper bulidDataWrapper(String SERVICE_BEAN_NAME,String methodName,Map<String, List<Byte>> args){
+	private static DataWrapper bulidDataWrapper(String SERVICE_BEAN_NAME,String methodName, byte[] inData){
 		DataWrapper dataWrapper = new DataWrapper();
 		dataWrapper.setBeanName(SERVICE_BEAN_NAME);
 		dataWrapper.setMethodName(methodName);
-		dataWrapper.setParamsMap(args);
+		dataWrapper.setParams(ByteBuffer.wrap(inData));
 		return dataWrapper;
 	}
-	/**
-	 * List<Byte>转为byte[]
-	 * @param byteList
-	 * @return
-	 */
-	public static byte[] listToByteArr(List<Byte> byteList){
-		byte[] b = null;
-		if(byteList == null || byteList.size() == 0){
-			b = new byte[0];
-		}else{
-			b = new byte[byteList.size()];
-			for(int i = 0; i<byteList.size();i++){
-				b[i] = byteList.get(i);
-			}
-		}
-		return b;
-	}
+	/** 
+     * byte(字节)根据长度转成kb(千字节)和mb(兆字节) 
+     *  
+     * @param bytes 
+     * @return 
+     */  
+    public static String bytes2kb(long bytes) {  
+        BigDecimal filesize = new BigDecimal(bytes);  
+        BigDecimal megabyte = new BigDecimal(1024 * 1024);  
+        float returnValue = filesize.divide(megabyte, 2, BigDecimal.ROUND_UP)  
+                .floatValue();  
+        if (returnValue > 1)  
+            return (returnValue + "MB");  
+        BigDecimal kilobyte = new BigDecimal(1024);  
+        returnValue = filesize.divide(kilobyte, 2, BigDecimal.ROUND_UP)  
+                .floatValue();  
+        return (returnValue + "KB");  
+    }  
 }

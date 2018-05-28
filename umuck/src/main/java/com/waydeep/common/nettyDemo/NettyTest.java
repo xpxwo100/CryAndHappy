@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class NettyTest {
+public  class NettyTest {
     @Test
     public void nettyServer() throws IOException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -70,5 +70,11 @@ public class NettyTest {
 
         Scanner scanner = new Scanner(System.in);
         while(clientHandle.sendMsg(scanner.nextLine()));
+    }
+
+    public void tdsad(){
+        int a = 2;
+        int b = a +3;
+
     }
 }

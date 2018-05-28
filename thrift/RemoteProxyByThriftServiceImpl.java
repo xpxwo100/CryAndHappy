@@ -1,10 +1,7 @@
 package cn.com.aperfect.base.thrift;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +12,13 @@ import cn.com.aperfect.auap.core.service.base.IBaseService;
 import cn.com.aperfect.auap.external.asm2.reflect.AsmMethodRefUtil;
 import cn.com.aperfect.auap.external.exception.CommandException;
 import cn.com.aperfect.auap.external.exception.CustomException;
+import cn.com.aperfect.auap.external.exception.ExceptionConstants;
+import cn.com.aperfect.auap.external.exception.FunctionalException;
 import cn.com.aperfect.auap.external.exception.ServiceException;
+import cn.com.aperfect.auap.external.thrift.ErrorMsgException;
 import cn.com.aperfect.auap.external.util.CollectionUtil;
 import cn.com.aperfect.auap.external.util.SpringContextUtil;
+import cn.com.aperfect.auap.external.util.Usual;
 import cn.com.aperfect.auap.external.util.serialize.FSTUtil;
 import cn.com.aperfect.dto.base.ObjectDto;
 
@@ -32,45 +33,76 @@ public class RemoteProxyByThriftServiceImpl implements RemoteProxyByThrift.Iface
 	 * 解析参数调用指定service类的方法
 	 */
 	@Override
-	public ReSult load(DataWrapper dataWrapper)   {
-		ReSult value = new ReSult();
+	public ReSult load(DataWrapper dataWrapper) throws CommandException {
 		String methodName = dataWrapper.getMethodName();
 		String beanName = dataWrapper.getBeanName();
-		Map<String, List<Byte>> paramsMap = dataWrapper.getParamsMap();
-		List<Byte> paramList = paramsMap.get("params");
+		ReSult value = null;
 		try {
 			//参数解析
-			byte[] b = new byte[paramList.size()];
-			for(int i = 0; i<paramList.size();i++){
-				b[i] = paramList.get(i);
-			}
+			byte[] b = dataWrapper.getParams();
 			Object map = (Object) FSTUtil.<Object>decode(b);
 			Object[] arg = null;
 			if(map != null){
 				 arg = new Object[]{map};
 			}
+			ObjectDto objectDto = execute(methodName, beanName, arg);
+			value = new ReSult();
+			if(objectDto != null){
+				byte[] inData = FSTUtil.encodeBuf(objectDto, ObjectDto.class);
+				value.setValue(ByteBuffer.wrap(inData));
+			}else{
+				value.setValue(ByteBuffer.wrap(Usual.mEmptyBytes));
+			}
+			value.setIsSuccess(true);
+		} catch (FunctionalException e) {
+			ErrorMsgException err = new ErrorMsgException(e.getCode(), e.getMsg(),  e.getDetailMessage(),  e.getArgs());
+			ReSult result = returnExpBean(err);
+			return result;
+		}catch (CommandException e) {
+			ErrorMsgException err = new ErrorMsgException( e.getCode(), e.getMsg(), e.getDetailMessage(), e.getArgs());
+			ReSult result = returnExpBean(err);
+			return result;
+		}catch (Exception e) {
+			ErrorMsgException err=new ErrorMsgException(ExceptionConstants.EJB_EXCEPTION_CODE, ExceptionConstants.EJB_EXCEPTION_MSG);
+			ReSult result = returnExpBean(err);
+			return result;
+		}
+		return value;
+	}
+	
+	/**
+	 * 序列化异常数据对象
+	 * @param response
+	 * @param mExp
+	 */
+	private  ReSult returnExpBean(ErrorMsgException mExp){
+		ReSult value = new ReSult();
+		byte[] mErrBytes=Usual.mEmptyBytes;
+		mErrBytes = FSTUtil.encodeBuf(mExp, ErrorMsgException.class);
+		value.setIsSuccess(false);
+		value.setValue(ByteBuffer.wrap(mErrBytes));
+		value.setErrorMessage(mExp.getMsg());
+		return value;
+	}
+	/**
+	 * 调用service
+	 * @param methodName
+	 * @param beanName
+	 * @param arg
+	 * @return
+	 * @throws CommandException
+	 */
+	private ObjectDto execute(String methodName,String beanName,Object[] arg) throws CommandException {
+		ObjectDto objectDto = null;
+		try {
 			//调用服务
 			IBaseService baseService = (IBaseService) SpringContextUtil.getBean(beanName);
 			Object obj = asmCall(arg, null, baseService, methodName,beanName);
 			// 返回数据
-			ObjectDto objectDto = null;
 			if (obj != null) {
 				ObjectHelper helper = new ObjectHelper();
 				objectDto = helper.getDTO(obj);
 			}
-			HashMap<String, List<Byte>> mapValue = new HashMap();
-			if(objectDto != null){
-				byte[] inData = FSTUtil.encodeBuf(objectDto, ObjectDto.class);
-				List<Byte> a = new ArrayList<>();
-				for(byte bb : inData){
-					a.add(bb);
-				}
-				mapValue.put("value", a);
-			}else{
-				List<Byte> a = new ArrayList<>();
-				mapValue.put("value", a);
-			}
-			value.setRelData(mapValue);
 		} catch (SecurityException e) {
 			throw new CommandException(e);
 		} catch (IllegalArgumentException e) {
@@ -98,8 +130,9 @@ public class RemoteProxyByThriftServiceImpl implements RemoteProxyByThrift.Iface
 			logger.equals(e);
 			throw new CommandException(e.getMessage(), e);
 		}
-		return value;
+		return objectDto;
 	}
+	
 	
 	/**
 	 * asm字节码调用
@@ -144,7 +177,7 @@ public class RemoteProxyByThriftServiceImpl implements RemoteProxyByThrift.Iface
 					, e);
 			throw e;
 		} catch (Exception e) {
-			logger.error("NullPointerException,BeanName:" + beanName+ ",MethodName:" + methodName
+			logger.error("NotDefinedException,BeanName:" + beanName+ ",MethodName:" + methodName
 					+ ",Args:" + CollectionUtil.ObjectArray2String(args)
 					+ ",ArgsType:" + CollectionUtil.ClassArray2String(argClz)
 					, e);
