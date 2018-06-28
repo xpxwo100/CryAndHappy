@@ -15,6 +15,12 @@ public class NettyClient implements Runnable {
     public ClientHandle getClient(){
         return  client;
     }
+    private SocketChannel socketChannel;
+    public void sendMessage(Object msg) {
+        if (socketChannel != null) {
+            socketChannel.writeAndFlush(msg);
+        }
+    }
     @Override
     public void run() {
         String host = "127.0.0.1";
@@ -24,7 +30,10 @@ public class NettyClient implements Runnable {
             Bootstrap b = new Bootstrap();
             b.group(workerGroup);
             b.channel(NioSocketChannel.class);
+            //保持连接数
+            b.option(ChannelOption.SO_BACKLOG, 128);
             b.option(ChannelOption.SO_KEEPALIVE, true);
+            b.option(ChannelOption.TCP_NODELAY, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
@@ -32,6 +41,11 @@ public class NettyClient implements Runnable {
                 }
             });
             ChannelFuture f = b.connect(host, port).sync();
+            if (f.isSuccess()) {
+                // 得到管道，便于通信
+                socketChannel = (SocketChannel) f.channel();
+                System.out.println("客户端开启成功...");
+            }
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

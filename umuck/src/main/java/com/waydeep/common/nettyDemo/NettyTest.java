@@ -20,7 +20,8 @@ public  class NettyTest {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 1024)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)//确定排队的连接数
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
@@ -69,7 +70,9 @@ public  class NettyTest {
         NettyClient.ClientHandle clientHandle = nettyClient.getClient();
 
         Scanner scanner = new Scanner(System.in);
-        while(clientHandle.sendMsg(scanner.nextLine()));
+        while(true){
+            clientHandle.sendMsg(scanner.nextLine());
+        }
     }
 
     public void tdsad(){

@@ -1,0 +1,31 @@
+.block{
+	margin-bottom: 10px;
+}
+/*
+表格样式
+*/
+.tableCss{
+	width: 100%;
+	border-top: 2px solid #66b1ff;
+	margin-bottom: 20px;
+}
+.el-icon-error{
+	color: #f56c6c;
+}
+
+.el-icon-success{
+	color: #67c23a;
+}
+/*弹出框样式*/
+.el-dialog__header{
+	background: #66b1ff;
+}
+.el-dialog__title{
+	color:white;
+}
+.el-dialog__headerbtn .el-dialog__close{
+	color:white;
+}
+.el-dialog__headerbtn .el-dialog__close:hover{
+	color:black;
+}

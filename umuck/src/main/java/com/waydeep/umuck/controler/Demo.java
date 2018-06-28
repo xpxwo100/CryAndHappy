@@ -24,7 +24,6 @@ public class Demo {
         return data;
     }
 
-
     @RequestMapping("/hello")
     public String index(@RequestParam String name) {
 

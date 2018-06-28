@@ -2,6 +2,8 @@ package com.waydeep.common.nettyDemo;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -23,7 +25,13 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
            // calrResult = "错误的表达式：" + e.getMessage();
         }
         calrResult = "<服务端消息 操"+body+">";
-        ctx.write(Unpooled.copiedBuffer(calrResult.getBytes()));
+        final ChannelFuture f = ctx.write(Unpooled.copiedBuffer(calrResult.getBytes()));
+        f.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                System.out.println("服务端消息返回消息后的调用");
+            }
+        });
     }
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {

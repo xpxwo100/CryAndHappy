@@ -43,37 +43,7 @@ public class Reactor implements Runnable {
                 Iterator<SelectionKey> iterator = selectedKeys.iterator();
                 while (iterator.hasNext()){
                     SelectionKey selectionKey =  iterator.next();
-                    if(selectionKey.isAcceptable()){
-                        System.out.println(selectionKey.attachment() + " - 接受请求事件");
-                        ServerSocketChannel  serverSocketChannel =(ServerSocketChannel ) selectionKey.channel();
-                        SocketChannel socketChannel =  serverSocketChannel.accept();
-                        socketChannel.configureBlocking(false)
-                                .register(selector,SelectionKey.OP_READ|SelectionKey.OP_WRITE);
-                        System.out.println(selectionKey.attachment() + " - 已连接");
-                    }
-                    if(selectionKey.isReadable()){
-                        //读取客户端数据
-                        System.out.println(" - 读数据事件");
-                        SocketChannel clientChannel=(SocketChannel)selectionKey.channel();
-                        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
-                        clientChannel.read(byteBuffer);
-
-                        System.out.println(" - 读取客户端数据：" + getString(byteBuffer));
-                    }
-                    if(selectionKey.isWritable()){
-                        //返回数据给客户端
-                        System.out.println(" - 返回数据给客户端");
-                        SocketChannel clientChannel=(SocketChannel)selectionKey.channel();
-                        ByteBuffer sendBuf = ByteBuffer.allocate(bufferSize);
-                        String sendText = "hello fuck you from server!!!\n";
-                        sendBuf.put(sendText.getBytes());
-                        sendBuf.flip();
-                        clientChannel.write(sendBuf);
-                    }
-                    if (selectionKey.isConnectable()) {
-                        System.out.println(selectionKey.attachment()
-                                + " - 连接事件");
-                    }
+                    dispatch(selector, selectionKey);
                     iterator.remove();
                 }
             }
@@ -84,6 +54,41 @@ public class Reactor implements Runnable {
        }
 
     }
+
+    private void dispatch(Selector selector, SelectionKey selectionKey) throws IOException {
+        if(selectionKey.isAcceptable()){
+            System.out.println(selectionKey.attachment() + " - 接受请求事件");
+            ServerSocketChannel serverSocketChannel =(ServerSocketChannel ) selectionKey.channel();
+            SocketChannel socketChannel =  serverSocketChannel.accept();
+            socketChannel.configureBlocking(false)
+                    .register(selector,SelectionKey.OP_READ|SelectionKey.OP_WRITE);
+            System.out.println(selectionKey.attachment() + " - 已连接");
+        }
+        if(selectionKey.isReadable()){
+            //读取客户端数据
+            System.out.println(" - 读数据事件");
+            SocketChannel clientChannel=(SocketChannel)selectionKey.channel();
+            ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
+            clientChannel.read(byteBuffer);
+
+            System.out.println(" - 读取客户端数据：" + getString(byteBuffer));
+        }
+        if(selectionKey.isWritable()){
+            //返回数据给客户端
+            System.out.println(" - 返回数据给客户端");
+            SocketChannel clientChannel=(SocketChannel)selectionKey.channel();
+            ByteBuffer sendBuf = ByteBuffer.allocate(bufferSize);
+            String sendText = "hello fuck you from server!!!\n";
+            sendBuf.put(sendText.getBytes());
+            sendBuf.flip();
+            clientChannel.write(sendBuf);
+        }
+        if (selectionKey.isConnectable()) {
+            System.out.println(selectionKey.attachment()
+                    + " - 连接事件");
+        }
+    }
+
     public static String getString(ByteBuffer buffer){
         String string = "";
         try

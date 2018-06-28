@@ -77,7 +77,21 @@ public class TestNio {
             }
         }
     }
-
+    /**
+     * 开启Nio服务端
+     */
+    @Test
+    public void testReactorServer() throws IOException {
+        new Thread(new ReactorDemo(4700)).start();
+        while (true){
+            try {
+                Thread.sleep(3*1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
     /**
      * NIO创建客户端
      */
@@ -104,8 +118,6 @@ public class TestNio {
                 socketChannel.write(byteBuffer);
             }
             System.out.println("准备读取数据~~");
-
-
             byteBuffer.clear();
             int numBytesRead;
             while ((numBytesRead = socketChannel.read(byteBuffer)) != -1) {
