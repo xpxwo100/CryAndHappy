@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>日志</title>
+    <link type="text/css" rel="stylesheet"  href="/jspub/elementUI/2.3.9/index.css">
+    <link type="text/css" rel="stylesheet"  href="/css/sapLog.css">
+</head>
+<body>
+<div id="app">
+    <div class="block">
+        <span>调用日期：</span>
+        <el-date-picker
+                v-model="filter.dataValue"
+                type="daterange"
+                align="right"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                @change="selectValue"
+                :picker-options="pickerOptions">
+        </el-date-picker>
+        <span style="margin-left:20px;">关键字：</span>
+        <el-input style="width:200px;" v-model="filter.errMsg" placeholder="请输入关键字" clearable @change="selectValue">
+        </el-input>
+    </div>
+    <el-table
+            :element-loading-text="loadingText" v-loading="loading"
+            ref="multipleTable"
+            :height="height"
+            :data="tableData"
+            tooltip-effect="dark"
+            class="tableCss"
+            @cell-dblclick="handleDBClick">
+        <el-table-column
+                prop="apiCode"
+                label="接口编码"
+                width="150"
+        >
+        </el-table-column>
+        <el-table-column
+                prop="lastReplayDatetime"
+                label="调用日期"
+                align = "center"
+                width="180">
+            <template slot-scope="scope">{{ scope.row.lastReplayDatetime?scope.row.lastReplayDatetime.substring(0,19):"" }}</template>
+        </el-table-column>
+        <el-table-column
+                prop="isReplay"
+                label="是否重新下发"
+                align = "center"
+                width="120">
+            <template slot-scope="scope">
+                <span v-if="scope.row.isReplay==false"><i class="el-icon-error"></i></span>
+                <span v-if="scope.row.isReplay==true"><i class="el-icon-success"></i></span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="hasErr"
+                label="是否执行成功"
+                align = "center"
+                width="120">
+            <template slot-scope="scope">
+                <span v-if="scope.row.hasErr==true"><i class="el-icon-error"></i></span>
+                <span v-if="scope.row.hasErr==false"><i class="el-icon-success"></i></span>
+            </template>
+        </el-table-column>
+        <el-table-column
+                prop="errMsg"
+                label="错误信息"
+                align = "center">
+        </el-table-column>
+        <el-table-column label="操作" fixed="right">
+            <template slot-scope="scope">
+                <el-button type="primary" icon="el-icon-search" circle @click="handleShow(scope.$index, scope.row)"></el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+    <div class="block">
+        <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+                background
+                :current-page="currentPage"
+                :page-sizes="[25, 50, 75, 100]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="totalCount">
+        </el-pagination>
+    </div>
+    <!--弹框内容  -->
+    <el-dialog
+            title="日志详情"
+            :close-on-click-modal="false"
+            :visible.sync="sapLogDialogVisible"
+            top="10px"
+            width="50%"
+            center>
+				  <span>
+					<el-form :model="ruleForm" status-icon  ref="ruleForm" label-width="150px">
+				  	  <el-form-item label="接口编码：">
+						  <span v-text="ruleForm.apiCode"></span>
+					  </el-form-item>
+					  <el-form-item label="同步ID：">
+					    <span v-text="ruleForm.syncID"></span>
+					  </el-form-item>
+					  <el-form-item label="调用日期：">
+					    <span v-text="ruleForm.lastReplayDatetime"></span>
+					  </el-form-item>
+					  <el-form-item label="请求地址：">
+					     <span v-text="ruleForm.reqURL"></span>
+					  </el-form-item>
+						<el-form-item label="请求参数：">
+						<el-input type="textarea" :rows="3" v-model="ruleForm.reqBody" readonly></el-input>
+					  </el-form-item>
+					  <el-form-item label="是否重新下发：">
+					     <span v-if="ruleForm.isReplay==false"><i class="el-icon-error"></i></span>
+						 <span v-if="ruleForm.isReplay==true"><i class="el-icon-success"></i></span>
+					  </el-form-item>
+					  <el-form-item label="是否执行成功：">
+					     <span v-if="ruleForm.hasErr==true"><i class="el-icon-error"></i></span>
+						 <span v-if="ruleForm.hasErr==false"><i class="el-icon-success"></i></span>
+					  </el-form-item>
+                        </el-form-item>
+                        <el-form-item label="返回信息：">
+						<el-input type="textarea" :rows="3" v-model="ruleForm.successMsg" readonly></el-input>
+					  </el-form-item>
+                        </el-form-item>
+                        <el-form-item label="错误信息：">
+						<el-input type="textarea" :rows="3" v-model="ruleForm.errMsg" readonly></el-input>
+					  </el-form-item>
+					</el-form>
+				  </span>
+    </el-dialog>
+</div>
+<script type="text/javascript" src="/jspub/jquery/2.2.4/jquery-2.2.4.min.js"></script>
+<script type="text/javascript" src="/jspub/lodash/4.17.4/lodash.min.js"></script>
+<script type="text/javascript" src="/jspub/vue/2.5.13/vue.min.js"></script>
+<script type="text/javascript" src="/jspub/elementUI/2.3.9/index.js"></script>
+<script type="text/javascript" src="/js/sapLog.js"></script>
+</body>
+</html>
