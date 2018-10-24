@@ -1,0 +1,102 @@
+{
+    "run": {
+        "default": "",
+        "items": [
+            {
+                "name": "servicecore",
+                "projectName": "servicecore",
+                "workingDirectory": "e:\\code\\xpx\\cloudcenter",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "umuck",
+                "projectName": "umuck",
+                "workingDirectory": "e:\\code\\xpx\\umuckservice",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "demo",
+                "projectName": "demo",
+                "workingDirectory": "e:\\code\\xpx\\umuckweb",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "spring-cloud-config-client",
+                "projectName": "spring-cloud-config-client",
+                "workingDirectory": "e:\\code\\xpx\\spring-cloud-config-client",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "server",
+                "projectName": "server",
+                "workingDirectory": "e:\\code\\xpx\\umuckweb2",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    },
+    "debug": {
+        "default": "",
+        "items": [
+            {
+                "name": "servicecore",
+                "projectName": "servicecore",
+                "workingDirectory": "e:\\code\\xpx\\cloudcenter",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "umuck",
+                "projectName": "umuck",
+                "workingDirectory": "e:\\code\\xpx\\umuckservice",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "demo",
+                "projectName": "demo",
+                "workingDirectory": "e:\\code\\xpx\\umuckweb",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "spring-cloud-config-client",
+                "projectName": "spring-cloud-config-client",
+                "workingDirectory": "e:\\code\\xpx\\spring-cloud-config-client",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            },
+            {
+                "name": "server",
+                "projectName": "server",
+                "workingDirectory": "e:\\code\\xpx\\umuckweb2",
+                "args": [],
+                "vmargs": [],
+                "env": {},
+                "preLaunchTask": ""
+            }
+        ]
+    }
+}
